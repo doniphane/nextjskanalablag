@@ -1,16 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Laugh } from "lucide-react"
+import { Loader2, Laugh, Sparkles } from "lucide-react"
 
 export default function JokeGenerator() {
-  const [categories, setCategories] = useState<string[]>([])
+  const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState("")
-  const [joke, setJoke] = useState<{
-    text_head?: string
-    text?: string
-    text_hidden?: string
-  } | null>(null)
+  const [joke, setJoke] = useState(null)
   const [loading, setLoading] = useState(false)
   const [loadingCategories, setLoadingCategories] = useState(true)
 
@@ -34,15 +30,28 @@ export default function JokeGenerator() {
     loadCategories()
   }, [])
 
-  const handleGetJoke = async () => {
+  const handleGetApiJoke = async () => {
     if (!selectedCategory) return
     setLoading(true)
     try {
       const res = await fetch(`/api/joke?category=${selectedCategory}`)
-      const jokeData = await res.json()
-      setJoke(jokeData)
+      const data = await res.json()
+      setJoke(data)
     } catch (error) {
-      console.error("Erreur lors du chargement de la blague:", error)
+      console.error("Erreur lors de la blague API:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGetPersonalJoke = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/blaguesperso")
+      const data = await res.json()
+      setJoke(data)
+    } catch (error) {
+      console.error("Erreur lors de la blague perso:", error)
     } finally {
       setLoading(false)
     }
@@ -50,7 +59,7 @@ export default function JokeGenerator() {
 
   return (
     <div className="space-y-8 text-center">
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap">
         {loadingCategories ? (
           <div className="w-60 h-12 bg-yellow-100 animate-pulse rounded-xl"></div>
         ) : (
@@ -67,13 +76,14 @@ export default function JokeGenerator() {
               ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-yellow-500">
-              
+              😂
             </div>
           </div>
         )}
 
+        {/* 🔁 Bouton blague depuis API externe */}
         <button
-          onClick={handleGetJoke}
+          onClick={handleGetApiJoke}
           disabled={loading || categories.length === 0}
           className="h-12 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg disabled:opacity-60"
         >
@@ -89,19 +99,41 @@ export default function JokeGenerator() {
             </>
           )}
         </button>
+
+        {/* 🌟 Bouton blague perso (MySQL via Prisma) */}
+        <button
+          onClick={handleGetPersonalJoke}
+          disabled={loading}
+          className="h-12 px-6 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg disabled:opacity-60"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Chargement...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-5 w-5" />
+              Blague perso 🤫
+            </>
+          )}
+        </button>
       </div>
 
+      {/* 📦 Affichage de la blague */}
       {joke && (
         <div className="bg-gradient-to-br from-pink-100 via-yellow-100 to-purple-100 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900 border-4 border-yellow-200 dark:border-yellow-600 p-6 rounded-3xl shadow-xl max-w-2xl mx-auto transition-all duration-300">
           {joke.text_head && (
             <p className="text-xl font-extrabold text-purple-800 dark:text-yellow-300 mb-3 animate-bounce">
-               {joke.text_head}
+              {joke.text_head}
             </p>
           )}
-          {joke.text && <p className="text-lg text-gray-800 dark:text-gray-200">{joke.text}</p>}
+          {joke.text && (
+            <p className="text-lg text-gray-800 dark:text-gray-200">{joke.text}</p>
+          )}
           {joke.text_hidden && (
             <p className="mt-4 pt-4 border-t border-dashed border-yellow-400 dark:border-yellow-500 text-gray-900 dark:text-gray-300 font-medium italic">
-               {joke.text_hidden}
+              {joke.text_hidden}
             </p>
           )}
         </div>
