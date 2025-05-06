@@ -7,7 +7,12 @@ export default function JokeGenerator() {
  const [categories, setCategories] = useState<string[]>([])
 
   const [selectedCategory, setSelectedCategory] = useState("")
-  const [joke, setJoke] = useState(null)
+ const [joke, setJoke] = useState<{
+  text_head?: string
+  text?: string
+  text_hidden?: string
+} | null>(null)
+
   const [loading, setLoading] = useState(false)
   const [loadingCategories, setLoadingCategories] = useState(true)
 
