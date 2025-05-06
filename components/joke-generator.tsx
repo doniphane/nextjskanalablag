@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { Loader2, Laugh, Sparkles } from "lucide-react"
 
 export default function JokeGenerator() {
-  const [categories, setCategories] = useState([])
+ const [categories, setCategories] = useState<string[]>([])
+
   const [selectedCategory, setSelectedCategory] = useState("")
   const [joke, setJoke] = useState(null)
   const [loading, setLoading] = useState(false)
